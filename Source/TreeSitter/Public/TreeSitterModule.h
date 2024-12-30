@@ -4,8 +4,11 @@
 
 #include "Modules/ModuleInterface.h"
 
-struct TSParser;
 struct TSLanguage;
+struct TSNode;
+struct TSParser;
+struct TSRange;
+struct TSPoint;
 
 class FTreeSitterModule : public IModuleInterface
 {
@@ -17,14 +20,39 @@ public:
 	//~ End IModuleInterface
 
 private:
+	/** References of registered console commands via IConsoleManager */
+	TArray<IConsoleCommand*> ConsoleCommands;
+
+	/** Called from StartupModule and sets up console commands for the plugin via IConsoleManager */
+	void RegisterConsoleCommands();
+	
+	/** Called from ShutdownModule and clears out previously registered console commands */
+	void UnregisterConsoleCommands();
+	
+	void ExecuteTestCommand(const TArray<FString>& InArgs) const;
+	
 	TArray<void*> ParserLibraryHandles;
+
+	using FGetLanguageParser = const TSLanguage*(void);
+	FGetLanguageParser* tree_sitter_json = nullptr;
+	FGetLanguageParser* tree_sitter_markdown = nullptr;
+	FGetLanguageParser* tree_sitter_markdown_inline = nullptr;
 	
-	using FFuncGetSomething = const TSLanguage*(void);
-	FFuncGetSomething* tree_sitter_json = nullptr;
-	
-	static void* LoadLibraryHandle();
 	static void* LoadLanguageLibraryHandle(const FString& InLibraryPath);
-	void CheckTreeSitter(TSParser* InParser) const;
+
+	void* LoadLanguageLibrary(const FString& InDLLName);
+	
+	void* LoadLanguageLibraryWithDLLExport(const FString& InDLLName, const FString& InExportName, FGetLanguageParser*& OutExportHandle);
+	void* LoadLanguageLibraryWithDLLExport(const FString& InLanguageName, FGetLanguageParser*& OutExportHandle);
+	
+	void CheckTreeSitter() const;
+	void CheckTreeSitterMarkdown() const;
+
+	static FString GetNodeTextForRanges(const FString& InSource, const TSPoint& InStartPoint, const TSPoint& InEndPoint);
+
+	static bool GetInlineTSRanges(const TSNode& InNode, TArray<TSRange>& OutRanges);
+	
+	static void DebugASTNodeInfo(const FString& InSource, const TSNode& InNode, const FString& InPadding = TEXT(""));
 
 	template<typename FFuncType>
 	static void GetDllExport(const TCHAR* DllName, void* DllHandle, const TCHAR* ExportName, FFuncType& ExportHandle)

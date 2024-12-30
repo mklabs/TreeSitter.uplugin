@@ -42,9 +42,11 @@ public class TreeSitterLibrary : ModuleRules
 		{
 			// Ensure that the DLL is staged along with the executable
 			RuntimeDependencies.Add(Path.Combine(ModuleDirectory, "Win64", "languages", "libtree-sitter-json.dll"));
+			RuntimeDependencies.Add(Path.Combine(ModuleDirectory, "Win64", "languages", "libtree-sitter-markdown.dll"));
+			RuntimeDependencies.Add(Path.Combine(ModuleDirectory, "Win64", "languages", "libtree-sitter-markdown-inline.dll"));
 			
 			// Delay-load the DLL, so we can load it from the right place first
-			// PublicDelayLoadDLLs.Add("libtree-sitter-json.dll");
+			// PublicDelayLoadDLLs.Add("libtree-sitter-markdown.dll");
 		}
 	}
 }
