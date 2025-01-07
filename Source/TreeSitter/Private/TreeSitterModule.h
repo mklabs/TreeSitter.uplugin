@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Modules/ModuleInterface.h"
+#include "ITreeSitterModule.h"
 
 struct TSLanguage;
 struct TSNode;
@@ -10,7 +10,7 @@ struct TSParser;
 struct TSRange;
 struct TSPoint;
 
-class FTreeSitterModule : public IModuleInterface
+class FTreeSitterModule : public ITreeSitterModule
 {
 public:
 
@@ -18,10 +18,17 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 	//~ End IModuleInterface
+	
+	//~ Begin ITreeSitterModule
+	virtual FGetLanguageParser* GetLanguageParser(const ETreeSitterLanguage InLanguage) override;
+	//~ End ITreeSitterModule
 
 private:
 	/** References of registered console commands via IConsoleManager */
 	TArray<IConsoleCommand*> ConsoleCommands;
+	
+	/** Reference to opened slate widget */
+	TSharedPtr<SWindow> SlateWindow;
 
 	/** Called from StartupModule and sets up console commands for the plugin via IConsoleManager */
 	void RegisterConsoleCommands();
@@ -29,11 +36,16 @@ private:
 	/** Called from ShutdownModule and clears out previously registered console commands */
 	void UnregisterConsoleCommands();
 	
+	void ExecuteWidgetCommand(const TArray<FString>& InArgs);
 	void ExecuteTestCommand(const TArray<FString>& InArgs) const;
+	
+	TSharedPtr<SWindow> OpenWindow(const TSharedRef<SWidget>& InWidgetContent, const FText& InTitle = FText::GetEmpty(), const FVector2f& InWindowSize = FVector2f(1280.f, 1080.f));
+	void HandleWindowClosed(const TSharedRef<SWindow>& InWindow);
 	
 	TArray<void*> ParserLibraryHandles;
 
 	using FGetLanguageParser = const TSLanguage*(void);
+	FGetLanguageParser* tree_sitter_javascript = nullptr;
 	FGetLanguageParser* tree_sitter_json = nullptr;
 	FGetLanguageParser* tree_sitter_markdown = nullptr;
 	FGetLanguageParser* tree_sitter_markdown_inline = nullptr;

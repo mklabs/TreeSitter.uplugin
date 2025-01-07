@@ -9,6 +9,7 @@ public class TreeSitter : ModuleRules
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
+				"TreeSitterLibrary"
 			}
 		);
 
@@ -17,9 +18,24 @@ public class TreeSitter : ModuleRules
 			new string[]
 			{
 				"Core",
-				"Projects",
-				"TreeSitterLibrary",
+				"CoreUObject",
+				"Engine",
+				"InputCore",
+				"Projects", 
+				"Slate",
+				"SlateCore", 
 			}
 		);
+		
+		// TODO Move to Editor module
+		if (Target.bBuildEditor)
+		{
+			PrivateDependencyModuleNames.AddRange(
+				new string[]
+				{
+					"UnrealEd"
+				}
+			);
+		}
 	}
 }

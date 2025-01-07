@@ -8,7 +8,9 @@
 #include "Misc/Paths.h"
 #include "Modules/ModuleManager.h"
 #include "TreeSitter.h"
-#include "Algo/Transform.h"
+#include "Widgets/STreeSitterPlayground.h"
+
+#define LOCTEXT_NAMESPACE "TreeSitter"
 
 void FTreeSitterModule::StartupModule()
 {
@@ -33,9 +35,10 @@ void FTreeSitterModule::StartupModule()
 	// TODO: See PythonScriptPluginPreload.cpp or WindowsStylusInputPlatformAPI.cpp
 	// to load all libraries found in folder, using IFileManager to do the lookup
 
+	LoadLanguageLibraryWithDLLExport(TEXT("javascript"), tree_sitter_javascript);
 	LoadLanguageLibraryWithDLLExport(TEXT("json"), tree_sitter_json);
-	LoadLanguageLibraryWithDLLExport(TEXT("markdown"), tree_sitter_markdown);
 	LoadLanguageLibraryWithDLLExport(TEXT("libtree-sitter-markdown-inline.dll"), TEXT("tree_sitter_markdown_inline"), tree_sitter_markdown_inline);
+	LoadLanguageLibraryWithDLLExport(TEXT("markdown"), tree_sitter_markdown);
 
 	// Simple sanity check to make sure the DLL loaded correctly
 	CheckTreeSitter();
@@ -54,6 +57,23 @@ void FTreeSitterModule::ShutdownModule()
 	ParserLibraryHandles.Reset();
 }
 
+ITreeSitterModule::FGetLanguageParser* FTreeSitterModule::GetLanguageParser(const ETreeSitterLanguage InLanguage)
+{
+	switch (InLanguage)
+	{
+	case ETreeSitterLanguage::JavaScript:
+		return tree_sitter_javascript;
+	case ETreeSitterLanguage::Json:
+		return tree_sitter_json;
+	case ETreeSitterLanguage::Markdown:
+		return tree_sitter_markdown;
+	case ETreeSitterLanguage::MarkdownInline:
+		return tree_sitter_markdown_inline;
+	}
+
+	return nullptr;
+}
+
 void FTreeSitterModule::RegisterConsoleCommands()
 {
 	ConsoleCommands.Add(IConsoleManager::Get().RegisterConsoleCommand(
@@ -62,11 +82,70 @@ void FTreeSitterModule::RegisterConsoleCommands()
 		FConsoleCommandWithArgsDelegate::CreateRaw(this, &FTreeSitterModule::ExecuteTestCommand),
 		ECVF_Default
 	));
+
+	ConsoleCommands.Add(IConsoleManager::Get().RegisterConsoleCommand(
+		TEXT("TreeSitter.Playground"),
+		TEXT("Opens the slate widget for testing"),
+		FConsoleCommandWithArgsDelegate::CreateRaw(this, &FTreeSitterModule::ExecuteWidgetCommand),
+		ECVF_Default
+	));
 }
 
 void FTreeSitterModule::ExecuteTestCommand(const TArray<FString>& InArgs) const
 {
 	CheckTreeSitterMarkdown();
+}
+
+TSharedPtr<SWindow> FTreeSitterModule::OpenWindow(const TSharedRef<SWidget>& InWidgetContent, const FText& InTitle, const FVector2f& InWindowSize)
+{
+	if (SlateWindow.IsValid())
+	{
+		SlateWindow->RequestDestroyWindow();
+		SlateWindow.Reset();
+	}
+	
+	TSharedPtr<SWindow> Window = SNew(SWindow)
+		.Title(InTitle)
+		.HasCloseButton(true)
+		.SupportsMaximize(false)
+		.SupportsMinimize(false)
+		.SupportsTransparency(EWindowTransparency::PerWindow)
+		.InitialOpacity(1.f)
+		.AutoCenter(EAutoCenter::PreferredWorkArea)
+		.ClientSize(InWindowSize)
+		[
+			SNew(SBorder)
+			.BorderImage(FAppStyle::GetBrush("ToolPanel.GroupBorder"))
+			[
+				SNew(SVerticalBox)
+				+SVerticalBox::Slot()
+				.FillHeight(1)
+				[
+					InWidgetContent
+				]
+			]
+		];
+
+	Window->SetOnWindowClosed(FOnWindowClosed::CreateRaw(this, &FTreeSitterModule::HandleWindowClosed));
+
+	if (FGlobalTabmanager::Get()->GetRootWindow().IsValid())
+	{
+		FSlateApplication::Get().AddWindowAsNativeChild(Window.ToSharedRef(), FGlobalTabmanager::Get()->GetRootWindow().ToSharedRef());
+	}
+	else
+	{
+		FSlateApplication::Get().AddWindow(Window.ToSharedRef());
+	}
+
+	return Window;
+}
+
+void FTreeSitterModule::HandleWindowClosed(const TSharedRef<SWindow>& InWindow)
+{
+	if (SlateWindow.IsValid())
+	{
+		SlateWindow.Reset();
+	}
 }
 
 void FTreeSitterModule::UnregisterConsoleCommands()
@@ -77,6 +156,16 @@ void FTreeSitterModule::UnregisterConsoleCommands()
 	}
 
 	ConsoleCommands.Empty();
+}
+
+void FTreeSitterModule::ExecuteWidgetCommand(const TArray<FString>& InArgs)
+{
+	const FVector2f WindowSize(1280.f, 1080.f);
+
+	const FText Title = LOCTEXT("WindowTitle", "TreeSitter Playground");
+
+	const TSharedRef<SWidget> ContentWidget = SNew(STreeSitterPlayground);
+	SlateWindow = OpenWindow(ContentWidget, Title, WindowSize);
 }
 
 void* FTreeSitterModule::LoadLanguageLibraryHandle(const FString& InLibraryPath)
@@ -411,3 +500,5 @@ void FTreeSitterModule::DebugASTNodeInfo(const FString& InSource, const TSNode& 
 }
 
 IMPLEMENT_MODULE(FTreeSitterModule, TreeSitter);
+
+#undef LOCTEXT_NAMESPACE
