@@ -16,28 +16,12 @@ STreeSitterPlayground::~STreeSitterPlayground()
 	Parser.Reset();
 }
 
-static constexpr const TCHAR* ExampleJson = TEXT(R"_JSON(
-				{
-				    "uenumValue": "enumValueC"
-				})_JSON");
-
 static TMap<ETreeSitterLanguage, FString> Examples = {
 	{ ETreeSitterLanguage::Json, TEXT(R"_JSON(
 {
-  "FileVersion": 3,
-  "Version": 1,
-  "VersionName": "1.0",
+  "VersionName": "0.1.0",
   "FriendlyName": "Tree-sitter",
   "Description": "Third party plugin wrapper for Tree-sitter",
-  "Category": "Other",
-  "CreatedBy": "Mickael Daniel",
-  "CreatedByURL": "",
-  "DocsURL": "",
-  "MarketplaceURL": "",
-  "CanContainContent": true,
-  "IsBetaVersion": false,
-  "IsExperimentalVersion": false,
-  "Installed": false,
   "Modules": [
     {
       "Name": "TreeSitter",
@@ -50,7 +34,6 @@ static TMap<ETreeSitterLanguage, FString> Examples = {
 	{ ETreeSitterLanguage::JavaScript, TEXT(R"_JSON(
 function greet() { console.log('hello'); }
 
-
 // Foo
 const foo = 2;
 
@@ -62,49 +45,33 @@ class Foo {
 }
 )_JSON") },
 	{ ETreeSitterLanguage::Markdown, TEXT(R"_Markdown(
-# Heading 1
+# TreeSitter.uplugin
 
-Yo, is it okay like this ?
+> Unreal Engine plugin that integrates the [tree-sitter](https://tree-sitter.github.io) library as a third-party module for in-editor use.
 
-😁
+## Todo
 
-Grug ❤️ Simplicity!
+- [ ] Task item 1
+- [ ] Task item 2
+- [x] Task item 3
+- [ ] Task item 4:
+    - Subtask item 1
+    - Subtask item 2
 
-漢字
-
-And what about **this** ?
-Or this
-
-## Heading 2
-
-Yo
-
-Here is a list of items:
-
-- Foo
-- Bar
-- Baz is *Foobar* and ***foo*** 
-
-
-## Heading 2
-
-What about code blocks
-
-### Heading 3
-
-Some code
+## Usage
 
 ```cpp
-FString Foo = TEXT("Foo");
+#include "TreeSitterParser.h"
+#include "tree_sitter/api.h"
 
-FString Foo2 = TEXT("Foo2");
+// Create the parser
+TSharedPtr<FTreeSitterParser> Parser = MakeShared<FTreeSitterParser>();
 
-
+// ...
 ```
 
----
+Baz is *Foobar* and ***foo*** 
 
-Bottom line after HR
 )_Markdown") },
 	{ ETreeSitterLanguage::MarkdownInline, TEXT(R"_Markdown(
 Baz is *Foobar* and ***foo*** 

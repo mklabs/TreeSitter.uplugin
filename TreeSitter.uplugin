@@ -1,23 +1,23 @@
 ﻿{
-	"FileVersion": 3,
-	"Version": 1,
-	"VersionName": "1.0",
-	"FriendlyName": "Tree-sitter",
-	"Description": "Third party plugin wrapper for Tree-sitter",
-	"Category": "Other",
-	"CreatedBy": "Mickael Daniel",
-	"CreatedByURL": "",
-	"DocsURL": "",
-	"MarketplaceURL": "",
-	"CanContainContent": true,
-	"IsBetaVersion": false,
-	"IsExperimentalVersion": false,
-	"Installed": false,
-	"Modules": [
-		{
-			"Name": "TreeSitter",
-			"Type": "Runtime",
-			"LoadingPhase": "Default"
-		}
-	]
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "0.1.0",
+  "FriendlyName": "Tree-sitter",
+  "Description": "Third party plugin wrapper for Tree-sitter, an incremental parsing library. It can build a concrete syntax tree for a source file and efficiently update the syntax tree as the source file is edited.",
+  "Category": "Experimental",
+  "CreatedBy": "Mickael Daniel",
+  "CreatedByURL": "",
+  "DocsURL": "",
+  "MarketplaceURL": "",
+  "CanContainContent": true,
+  "IsBetaVersion": false,
+  "IsExperimentalVersion": false,
+  "Installed": false,
+  "Modules": [
+    {
+      "Name": "TreeSitter",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ]
 }
