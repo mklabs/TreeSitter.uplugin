@@ -11,6 +11,8 @@
 #include "Widgets/Input/SMultiLineEditableTextBox.h"
 #include "tree_sitter/api.h"
 
+#define LOCTEXT_NAMESPACE "TreeSitter"
+
 STreeSitterPlayground::~STreeSitterPlayground()
 {
 	Parser.Reset();
@@ -107,14 +109,14 @@ void STreeSitterPlayground::Construct(const FArguments& InArgs)
 			.Padding(0.f, 0.f, 4.f, 0.f)
 			[
 				SNew(STextBlock)
-				.Text(NSLOCTEXT("TreeSitter", "ComboLabel", "Language Parser:"))
+				.Text(LOCTEXT("ComboLabel", "Language Parser:"))
 			]
 			+ SHorizontalBox::Slot()
 			// Left pane, takes half width
 			.FillWidth(0.5f)
 			[
 				SAssignNew(ComboBox, SComboBox<FName>)
-				.ToolTipText(NSLOCTEXT("TreeSitter", "ComboToolTip", "Choose the language parser"))
+				.ToolTipText(LOCTEXT("ComboToolTip", "Choose the language parser"))
 				.OptionsSource(&AvailableLanguages)
 				.InitiallySelectedItem(SelectedLanguage)
 				.OnSelectionChanged(this, &STreeSitterPlayground::HandleSelectedLanguageChanged)
@@ -127,9 +129,11 @@ void STreeSitterPlayground::Construct(const FArguments& InArgs)
 			
 			+ SHorizontalBox::Slot()
 			.AutoWidth()
+			.Padding(4.f, 0.f, 0.f, 0.f)
 			[
 				SNew(SCheckBox)
 				.IsChecked(this, &STreeSitterPlayground::IsPreservingCode)
+				.ToolTipText(LOCTEXT("CheckboxTooltip", "Check this box to preserve the code when changing languages. Uncheck to load pre-defined examples."))
 				.OnCheckStateChanged(this, &STreeSitterPlayground::SetPreservingCode)
 			]
 		]
@@ -219,3 +223,5 @@ void STreeSitterPlayground::SetPreservingCode(const ECheckBoxState InCheckBoxSta
 {
 	bPreserveCode = InCheckBoxState == ECheckBoxState::Checked;
 }
+
+#undef LOCTEXT_NAMESPACE
