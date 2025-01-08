@@ -1,20 +1,23 @@
 # TreeSitter.uplugin
 
-> Unreal Engine plugin that integrates the [tree-sitter](https://tree-sitter.github.io) library as a third-party module for in-editor use.
+> An Unreal Engine plugin that integrates the [tree-sitter](https://tree-sitter.github.io) library as a third-party module for in-editor use.
 
 This is a work in progress, but the third-party module bringing access to tree-sitter API within Unreal is there and working.
 
 See `Source/TreeSitter/Private/Tests/TreeSitterParser.spec.cpp` for usage examples.
 
+**Slate tree-sitter playground**: Open with `TreeSitter.Playground` command in the console prompt.
+
+![](./Resources/Media/tree_sitter_playground_x2.gif)
+
 ## Introduction
 
 The primary use case I'm going for is markdown related, aiming to implement native markdown to slate rendering for usage in the editor (and possibly UMG).
 
-The other one I have in mind is syntax highlighting for any language tree-sitter have parsers for.
+The one that comes next is syntax highlighting for any language tree-sitter have parsers for.
 
 Tree-sitter is a very nice piece of technology. Being able to parse almost any language and run queries against the Abstract Syntax Tree (AST) is powerful in itself. Its use cases and possible applications are quite
 extensive.
-
 
 ## Features
 
@@ -126,7 +129,7 @@ Big thanks to:
 
 This project is licensed under MIT. 
 
-Third party:
+Third party libraries:
 
 - [Tree-sitter](./Source/ThirdParty/TreeSitterLibrary/LICENSE)
 - [Language Parsers](./Source/ThirdParty/TreeSitterLibrary/Win64/languages/licenses)
