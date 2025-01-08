@@ -77,3 +77,7 @@ DerivedDataCache/*
 
 !Source/ThirdParty/TreeSitterLibrary/Win64/**/*.dll
 !Source/ThirdParty/TreeSitterLibrary/Win64/**/*.lib
+
+# ---
+
+*.readme.md
