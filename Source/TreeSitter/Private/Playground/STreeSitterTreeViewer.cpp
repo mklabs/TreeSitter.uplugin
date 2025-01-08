@@ -2,8 +2,8 @@
 
 #include "STreeSitterTreeViewer.h"
 
+#include "TreeSitterNode.h"
 #include "tree_sitter/api.h"
-#include "Styling/CoreStyle.h"
 
 void STreeSitterTreeViewer::Construct(const FArguments& InArgs)
 {
@@ -28,16 +28,16 @@ void STreeSitterTreeViewer::Construct(const FArguments& InArgs)
 
 void PrintNode(TSNode Node, uint32 Depth) {
     // Indentation for current depth
-    FString Indent = FString::ChrN(Depth * 2, ' ');
+    const FString Indent = FString::ChrN(Depth * 2, ' ');
 
     // Get node type and range
-    FString NodeType = UTF8_TO_TCHAR(ts_node_type(Node));
-	TSPoint StartPoint = ts_node_start_point(Node);
-	
-    uint32 StartRow = StartPoint.row;
-    uint32 StartCol = StartPoint.column;
-    uint32 EndRow = StartPoint.row;
-    uint32 EndCol = StartPoint.column;
+    const FString NodeType = UTF8_TO_TCHAR(ts_node_type(Node));
+    const TSPoint StartPoint = ts_node_start_point(Node);
+
+    const uint32 StartRow = StartPoint.row;
+    const uint32 StartCol = StartPoint.column;
+    const uint32 EndRow = StartPoint.row;
+    const uint32 EndCol = StartPoint.column;
 
     // Print opening line
     if (ts_node_is_named(Node))
@@ -69,26 +69,26 @@ void STreeSitterTreeViewer::UpdateTree(const TSNode& InRootNode, const FText& In
 
 void STreeSitterTreeViewer::ExpandTreeView(const TSharedRef<STreeSitterView>& InTreeView)
 {
-	for (const TSharedPtr<FTreeSitterTreeNode>& Item : TreeItems)
+	for (const TSharedPtr<FTreeSitterNode>& Item : TreeItems)
 	{
 		SetItemExpansionRecursive(Item, true);
 	}
 }
 
-void STreeSitterTreeViewer::SetItemExpansionRecursive(const TSharedPtr<FTreeSitterTreeNode>& InTreeItem, bool bInExpansionState)
+void STreeSitterTreeViewer::SetItemExpansionRecursive(const TSharedPtr<FTreeSitterNode>& InTreeItem, bool bInExpansionState)
 {
 	if (InTreeItem.IsValid())
 	{
 		TreeView->SetItemExpansion(InTreeItem, bInExpansionState);
 
-		for (TSharedPtr<FTreeSitterTreeNode>& ChildModel : InTreeItem->Children)
+		for (TSharedPtr<FTreeSitterNode>& ChildModel : InTreeItem->Children)
 		{
 			SetItemExpansionRecursive(ChildModel, bInExpansionState);
 		}
 	}
 }
 
-TSharedRef<ITableRow> STreeSitterTreeViewer::GenerateRow(TSharedPtr<FTreeSitterTreeNode> InItem, const TSharedRef<STableViewBase>& InOwnerTable)
+TSharedRef<ITableRow> STreeSitterTreeViewer::GenerateRow(TSharedPtr<FTreeSitterNode> InItem, const TSharedRef<STableViewBase>& InOwnerTable)
 {
 	// (program ; [1, 0] - [10, 0] javascript
 	// parameters: (formal_parameters ; [1, 14] - [1, 16] javascript
@@ -134,7 +134,7 @@ TSharedRef<ITableRow> STreeSitterTreeViewer::GenerateRow(TSharedPtr<FTreeSitterT
 
 	// const FMargin Padding = InItem->Depth == 0 ? FMargin(40.f, 40.f, 4.f, 4.f) : FMargin(4.f, 4.f, 4.f, 4.f);
 	const FMargin Padding = FMargin(4.f, 4.f, 4.f, 4.f);
-	return SNew(STableRow<TSharedPtr<FTreeSitterTreeNode>>, InOwnerTable)
+	return SNew(STableRow<TSharedPtr<FTreeSitterNode>>, InOwnerTable)
 		[
 			SNew(SHorizontalBox)
 			+SHorizontalBox::Slot()
@@ -148,33 +148,16 @@ TSharedRef<ITableRow> STreeSitterTreeViewer::GenerateRow(TSharedPtr<FTreeSitterT
 		];
 }
 
-void STreeSitterTreeViewer::GetTreeChildren(TSharedPtr<FTreeSitterTreeNode> InItem, TArray<TSharedPtr<FTreeSitterTreeNode>>& OutChildren)
+void STreeSitterTreeViewer::GetTreeChildren(TSharedPtr<FTreeSitterNode> InItem, TArray<TSharedPtr<FTreeSitterNode>>& OutChildren)
 {
 	OutChildren = InItem->Children;
 }
 
-void STreeSitterTreeViewer::PopulateTree(const ::TSNode& InNode, const TSharedPtr<FTreeSitterTreeNode>& InParent, const uint32 InDepth)
+void STreeSitterTreeViewer::PopulateTree(const TSNode& InNode, const TSharedPtr<FTreeSitterNode>& InParent, const uint32 InDepth)
 {
 	const char* UTF8Source = TCHAR_TO_UTF8(*CodeText.ToString());
 	
-	const TSharedRef<FTreeSitterTreeNode> NewNode = MakeShared<FTreeSitterTreeNode>();
-	NewNode->Language = FString(ts_language_name(ts_node_language(InNode)));
-	NewNode->NodeType = FString(ts_node_type(InNode));
-	NewNode->NodeGrammarType = FString(ts_node_grammar_type(InNode));
-	NewNode->Symbol =  ts_node_symbol(InNode);
-	NewNode->GrammarSymbol = ts_node_grammar_symbol(InNode);
-	NewNode->StartByte = ts_node_start_byte(InNode);
-	NewNode->EndByte = ts_node_end_byte(InNode);
-	NewNode->StartPoint = ts_node_start_point(InNode);
-	NewNode->EndPoint = ts_node_end_point(InNode);
-	NewNode->bIsNull = ts_node_is_null(InNode);
-	NewNode->bIsMissing = ts_node_is_missing(InNode);
-	NewNode->bIsNamed = ts_node_is_named(InNode);
-	NewNode->bHasError = ts_node_has_error(InNode);
-	NewNode->bIsError = ts_node_is_error(InNode);
-	NewNode->bIsExtra = ts_node_is_extra(InNode);
-	NewNode->bHasChanges = ts_node_has_changes(InNode);
-	NewNode->Depth = InDepth;
+	const TSharedRef<FTreeSitterNode> NewNode = MakeShared<FTreeSitterNode>(InNode, InDepth);
 
 	char* NodeString = ts_node_string(InNode);
 	NewNode->SExpression = FString(UTF8_TO_TCHAR(NodeString));
@@ -182,7 +165,7 @@ void STreeSitterTreeViewer::PopulateTree(const ::TSNode& InNode, const TSharedPt
 
 	{
 		const uint32 SubstringLength = NewNode->EndByte - NewNode->StartByte;
-		auto StringConversion = StringCast<TCHAR>(UTF8Source + NewNode->StartByte, SubstringLength);
+		const auto StringConversion = StringCast<TCHAR>(UTF8Source + NewNode->StartByte, SubstringLength);
 		NewNode->ExtractedSource = StringConversion.Get();
 	}
 	

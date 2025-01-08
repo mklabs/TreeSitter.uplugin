@@ -27,7 +27,6 @@ bool FTreeSitterParser::SetLanguage(const ETreeSitterLanguage InLanguage) const
 
 TSTree* FTreeSitterParser::Parse(const FString& SourceCode) const
 {
-	
 	// Step 1: Convert FString to UTF-8
 	const FTCHARToUTF8 UTF8String(*SourceCode);
 	

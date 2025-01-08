@@ -27,8 +27,8 @@ private:
 	/** References of registered console commands via IConsoleManager */
 	TArray<IConsoleCommand*> ConsoleCommands;
 	
-	/** Reference to opened slate widget */
-	TSharedPtr<SWindow> SlateWindow;
+	/** Reference to opened slate widget windows */
+	TArray<TSharedPtr<SWindow>> SlateWindows;
 
 	/** Called from StartupModule and sets up console commands for the plugin via IConsoleManager */
 	void RegisterConsoleCommands();
@@ -38,6 +38,8 @@ private:
 	
 	void ExecuteWidgetCommand(const TArray<FString>& InArgs);
 	void ExecuteTestCommand(const TArray<FString>& InArgs) const;
+	
+	void ExecuteGenerateMarkdownSlateWidgetCommand(const TArray<FString>& InArgs);
 	
 	TSharedPtr<SWindow> OpenWindow(const TSharedRef<SWidget>& InWidgetContent, const FText& InTitle = FText::GetEmpty(), const FVector2f& InWindowSize = FVector2f(1280.f, 1080.f));
 	void HandleWindowClosed(const TSharedRef<SWindow>& InWindow);

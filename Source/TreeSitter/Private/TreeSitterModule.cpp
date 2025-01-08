@@ -8,7 +8,8 @@
 #include "Misc/Paths.h"
 #include "Modules/ModuleManager.h"
 #include "TreeSitter.h"
-#include "Widgets/STreeSitterPlayground.h"
+#include "Markdown/STreeSitterMarkdownPlayground.h"
+#include "Playground/STreeSitterPlayground.h"
 
 #define LOCTEXT_NAMESPACE "TreeSitter"
 
@@ -55,6 +56,7 @@ void FTreeSitterModule::ShutdownModule()
 	}
 
 	ParserLibraryHandles.Reset();
+	SlateWindows.Reset();
 }
 
 ITreeSitterModule::FGetLanguageParser* FTreeSitterModule::GetLanguageParser(const ETreeSitterLanguage InLanguage)
@@ -89,6 +91,13 @@ void FTreeSitterModule::RegisterConsoleCommands()
 		FConsoleCommandWithArgsDelegate::CreateRaw(this, &FTreeSitterModule::ExecuteWidgetCommand),
 		ECVF_Default
 	));
+
+	ConsoleCommands.Add(IConsoleManager::Get().RegisterConsoleCommand(
+		TEXT("TreeSitter.GenerateMarkdownSlateWidget"),
+		TEXT("Opens the slate widget for testing"),
+		FConsoleCommandWithArgsDelegate::CreateRaw(this, &FTreeSitterModule::ExecuteGenerateMarkdownSlateWidgetCommand),
+		ECVF_Default
+	));
 }
 
 void FTreeSitterModule::ExecuteTestCommand(const TArray<FString>& InArgs) const
@@ -96,14 +105,20 @@ void FTreeSitterModule::ExecuteTestCommand(const TArray<FString>& InArgs) const
 	CheckTreeSitterMarkdown();
 }
 
+void FTreeSitterModule::ExecuteGenerateMarkdownSlateWidgetCommand(const TArray<FString>& InArgs)
+{
+	const FVector2f WindowSize(850.f, 650.f);
+
+	const FText Title = LOCTEXT("WindowTitle", "TreeSitter Playground");
+
+	const TSharedRef<SWidget> ContentWidget = SNew(STreeSitterMarkdownPlayground);
+	const TSharedPtr<SWindow> Window = OpenWindow(ContentWidget, Title, WindowSize);
+	Window->SetOnWindowClosed(FOnWindowClosed::CreateRaw(this, &FTreeSitterModule::HandleWindowClosed));
+	SlateWindows.Add(Window);
+}
+
 TSharedPtr<SWindow> FTreeSitterModule::OpenWindow(const TSharedRef<SWidget>& InWidgetContent, const FText& InTitle, const FVector2f& InWindowSize)
 {
-	if (SlateWindow.IsValid())
-	{
-		SlateWindow->RequestDestroyWindow();
-		SlateWindow.Reset();
-	}
-	
 	TSharedPtr<SWindow> Window = SNew(SWindow)
 		.Title(InTitle)
 		.HasCloseButton(true)
@@ -142,10 +157,10 @@ TSharedPtr<SWindow> FTreeSitterModule::OpenWindow(const TSharedRef<SWidget>& InW
 
 void FTreeSitterModule::HandleWindowClosed(const TSharedRef<SWindow>& InWindow)
 {
-	if (SlateWindow.IsValid())
+	SlateWindows.RemoveAll([InWindow](const TSharedPtr<SWindow>& Window)
 	{
-		SlateWindow.Reset();
-	}
+		return Window == InWindow;
+	});
 }
 
 void FTreeSitterModule::UnregisterConsoleCommands()
@@ -165,7 +180,9 @@ void FTreeSitterModule::ExecuteWidgetCommand(const TArray<FString>& InArgs)
 	const FText Title = LOCTEXT("WindowTitle", "TreeSitter Playground");
 
 	const TSharedRef<SWidget> ContentWidget = SNew(STreeSitterPlayground);
-	SlateWindow = OpenWindow(ContentWidget, Title, WindowSize);
+	const TSharedPtr<SWindow> Window = OpenWindow(ContentWidget, Title, WindowSize);
+	Window->SetOnWindowClosed(FOnWindowClosed::CreateRaw(this, &FTreeSitterModule::HandleWindowClosed));
+	SlateWindows.Add(Window);
 }
 
 void* FTreeSitterModule::LoadLanguageLibraryHandle(const FString& InLibraryPath)

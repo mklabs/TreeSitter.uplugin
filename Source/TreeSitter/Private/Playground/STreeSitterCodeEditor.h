@@ -3,7 +3,6 @@
 #pragma once
 
 #include "Framework/SlateDelegates.h"
-#include "Widgets/SCompoundWidget.h"
 
 class SMultiLineEditableTextBox;
 

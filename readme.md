@@ -54,6 +54,7 @@ Static libraries for tree-sitter and DLLs for language parsers are included as p
 Ensure you have `TreeSitter` and `TreeSitterLibrary` module dependency defined in your Build.cs file.
 
 ```cpp
+#include "ITreeSitterModule.h"
 #include "TreeSitterParser.h"
 #include "tree_sitter/api.h"
 

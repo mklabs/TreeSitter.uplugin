@@ -7,16 +7,10 @@
 #include "STreeSitterCodeEditor.h"
 #include "STreeSitterTreeViewer.h"
 #include "TreeSitterParser.h"
-#include "Widgets/Input/SComboBox.h"
 #include "Widgets/Input/SMultiLineEditableTextBox.h"
 #include "tree_sitter/api.h"
 
 #define LOCTEXT_NAMESPACE "TreeSitter"
-
-STreeSitterPlayground::~STreeSitterPlayground()
-{
-	Parser.Reset();
-}
 
 static TMap<ETreeSitterLanguage, FString> Examples = {
 	{ ETreeSitterLanguage::Json, TEXT(R"_JSON(
@@ -80,10 +74,15 @@ Baz is *Foobar* and ***foo***
 )_Markdown") },
 };
 
+STreeSitterPlayground::~STreeSitterPlayground()
+{
+	Parser.Reset();
+}
+
 void STreeSitterPlayground::Construct(const FArguments& InArgs)
 {
 	Parser = MakeShared<FTreeSitterParser>();
-	Parser->SetLanguage(ITreeSitterModule::Get().GetLanguageParser(ETreeSitterLanguage::JavaScript)());
+	Parser->SetLanguage(ETreeSitterLanguage::Json);
 
 	SelectedLanguage = UEnum::GetValueAsName(ETreeSitterLanguage::Json);
 	AvailableLanguages = {
@@ -97,7 +96,6 @@ void STreeSitterPlayground::Construct(const FArguments& InArgs)
 	[
 		SNew(SVerticalBox)
 
-		// Slider on top
 		+ SVerticalBox::Slot()
 		.AutoHeight()
 		.Padding(5.f)
@@ -196,9 +194,8 @@ void STreeSitterPlayground::HandleSelectedLanguageChanged(FName InSelectedLangua
 		CodeText = FText::FromString(Example);
 		CodeEditor->GetEditBox()->SetText(CodeText);
 	}
-
 	
-	Parser->SetLanguage(ITreeSitterModule::Get().GetLanguageParser(Language)());
+	Parser->SetLanguage(Language);
 	ProcessPendingCode();
 }
 
