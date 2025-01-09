@@ -5,8 +5,15 @@
 #include "TreeSitterNode.h"
 #include "tree_sitter/api.h"
 
+STreeSitterTreeViewer::~STreeSitterTreeViewer()
+{
+	CodeText.Reset();
+}
+
 void STreeSitterTreeViewer::Construct(const FArguments& InArgs)
 {
+	CodeText = InArgs._SourceCodeText;
+	
 	ChildSlot
 	[
 		SNew(SBorder)
@@ -57,7 +64,7 @@ void PrintNode(TSNode Node, uint32 Depth) {
     UE_LOG(LogTemp, Log, TEXT("%s)"), *Indent);
 }
 
-void STreeSitterTreeViewer::UpdateTree(const TSNode& InRootNode, const FText& InCodeText)
+void STreeSitterTreeViewer::UpdateTree(const TSNode& InRootNode, const TSharedRef<FString>& InCodeText)
 {
 	CodeText = InCodeText;
 
@@ -105,31 +112,31 @@ TSharedRef<ITableRow> STreeSitterTreeViewer::GenerateRow(TSharedPtr<FTreeSitterN
 	const FString LineOutput = FString::Printf(
 		TEXT("%s%s%s ; [%d, %d] - [%d, %d] %s"),
 		*OpeningParenthesis,
-		*InItem->NodeType,
+		*InItem->NodeType.ToString(),
 		*ClosingParenthesis,
 		InItem->StartPoint.row,
 		InItem->StartPoint.column,
 		InItem->EndPoint.row,
 		InItem->EndPoint.column,
-		*InItem->Language
+		*InItem->Language.ToString()
 	);
 
-	const FString FieldName = InItem->FieldName;
-	const bool bHasFieldName = !FieldName.IsEmpty();
+	const FName FieldName = InItem->FieldName;
+	const bool bHasFieldName = !FieldName.IsNone();
 
 	// name: (identifier) ; [1, 9] - [1, 14] javascript
 	// parameters: (formal_parameters ; [1, 14] - [1, 16] javascript
 	const FString NamedLineOutput = FString::Printf(
 		TEXT("%s: %s%s%s ; [%d, %d] - [%d, %d] %s"),
-		*InItem->FieldName,
+		*InItem->FieldName.ToString(),
 		*OpeningParenthesis,
-		*InItem->NodeType,
+		*InItem->NodeType.ToString(),
 		*ClosingParenthesis,
 		InItem->StartPoint.row,
 		InItem->StartPoint.column,
 		InItem->EndPoint.row,
 		InItem->EndPoint.column,
-		*InItem->Language
+		*InItem->Language.ToString()
 	);
 
 	// const FMargin Padding = InItem->Depth == 0 ? FMargin(40.f, 40.f, 4.f, 4.f) : FMargin(4.f, 4.f, 4.f, 4.f);
@@ -155,7 +162,7 @@ void STreeSitterTreeViewer::GetTreeChildren(TSharedPtr<FTreeSitterNode> InItem, 
 
 void STreeSitterTreeViewer::PopulateTree(const TSNode& InNode, const TSharedPtr<FTreeSitterNode>& InParent, const uint32 InDepth)
 {
-	const char* UTF8Source = TCHAR_TO_UTF8(*CodeText.ToString());
+	// const char* UTF8Source = TCHAR_TO_UTF8(*CodeText.ToString());
 	
 	const TSharedRef<FTreeSitterNode> NewNode = MakeShared<FTreeSitterNode>(InNode, InDepth);
 
@@ -163,12 +170,6 @@ void STreeSitterTreeViewer::PopulateTree(const TSNode& InNode, const TSharedPtr<
 	NewNode->SExpression = FString(UTF8_TO_TCHAR(NodeString));
 	free(NodeString);
 
-	{
-		const uint32 SubstringLength = NewNode->EndByte - NewNode->StartByte;
-		const auto StringConversion = StringCast<TCHAR>(UTF8Source + NewNode->StartByte, SubstringLength);
-		NewNode->ExtractedSource = StringConversion.Get();
-	}
-	
 	NewNode->FieldName = GetNodeFieldName(InNode);
 
 	if (NewNode->bIsNamed)
@@ -190,9 +191,9 @@ void STreeSitterTreeViewer::PopulateTree(const TSNode& InNode, const TSharedPtr<
 	}
 }
 
-FString STreeSitterTreeViewer::GetNodeFieldName(const TSNode& InNode)
+FName STreeSitterTreeViewer::GetNodeFieldName(const TSNode& InNode)
 {
-	FString FieldName;
+	FName FieldName;
 	const TSNode NodeParent = ts_node_parent(InNode);
 	if (ts_node_is_null(NodeParent))
 	{
@@ -208,7 +209,7 @@ FString STreeSitterTreeViewer::GetNodeFieldName(const TSNode& InNode)
 		const TSNode FoundNode = ts_node_child_by_field_id(NodeParent, Id);
 		if (!ts_node_is_null(FoundNode) && ts_node_eq(FoundNode, InNode))
 		{
-			FieldName = FString(ts_language_field_name_for_id(NodeLanguage, Id));
+			FieldName = FName(ts_language_field_name_for_id(NodeLanguage, Id));
 			break;
 		}
 	}

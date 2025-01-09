@@ -20,13 +20,17 @@ public:
 
 	void Construct(const FArguments& InArgs);
 
-	const FString& GetMarkdownSource() const;
-	void SetMarkdownSource(const FString& InMarkdownSource);
+	const TSharedPtr<FString>& GetMarkdownSource() const;
+	void SetMarkdownSource(const FString& InMarkdownSource) const;
+	
+	FString GetMarkdownSourceText() const;
 
 private:
 	TSharedPtr<FTreeSitterParser> Parser;
 	TSharedPtr<SBorder> Container;
-	FString MarkdownSource;
+	// FString MarkdownSource;
+	
+	TSharedPtr<FString> MarkdownSource;
 
-	static TSharedRef<SWidget> GenerateMarkdownSlateWidget(const TSharedRef<FTreeSitterParser>& InParser, const FString& InSource);
+	TSharedRef<SWidget> GenerateMarkdownSlateWidget() const;
 };

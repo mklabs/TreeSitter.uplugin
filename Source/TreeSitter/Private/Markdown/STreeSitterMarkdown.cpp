@@ -14,7 +14,7 @@ STreeSitterMarkdown::~STreeSitterMarkdown()
 
 void STreeSitterMarkdown::Construct(const FArguments& InArgs)
 {
-	MarkdownSource = InArgs._InitialMarkdown;
+	MarkdownSource = MakeShared<FString>(InArgs._InitialMarkdown);
 	
 	Parser = MakeShared<FTreeSitterParser>();
 	Parser->SetLanguage(ETreeSitterLanguage::Markdown);
@@ -25,35 +25,43 @@ void STreeSitterMarkdown::Construct(const FArguments& InArgs)
 		.Padding(8.f, 8.f)
 		.BorderImage(FAppStyle::GetBrush("Border"))
 		[
-			GenerateMarkdownSlateWidget(Parser.ToSharedRef(), MarkdownSource)
+			GenerateMarkdownSlateWidget()
 		]
     ];
 }
 
-const FString& STreeSitterMarkdown::GetMarkdownSource() const
+const TSharedPtr<FString>& STreeSitterMarkdown::GetMarkdownSource() const
 {
 	return MarkdownSource;
 }
 
-void STreeSitterMarkdown::SetMarkdownSource(const FString& InMarkdownSource)
+void STreeSitterMarkdown::SetMarkdownSource(const FString& InMarkdownSource) const
 {
-	if (MarkdownSource == InMarkdownSource)
+	const FString CurrentSource = GetMarkdownSourceText();
+	if (CurrentSource == InMarkdownSource)
 	{
 		return;
 	}
 	
-	MarkdownSource = InMarkdownSource;
+	*MarkdownSource = InMarkdownSource;
 
 	Container->ClearContent();
-	Container->SetContent(GenerateMarkdownSlateWidget(Parser.ToSharedRef(), MarkdownSource));
+	Container->SetContent(GenerateMarkdownSlateWidget());
 }
 
-TSharedRef<SWidget> STreeSitterMarkdown::GenerateMarkdownSlateWidget(const TSharedRef<FTreeSitterParser>& InParser, const FString& InSource)
+FString STreeSitterMarkdown::GetMarkdownSourceText() const
 {
-	TSTree* Tree = InParser->Parse(InSource);
+	return MarkdownSource.IsValid() ? *MarkdownSource : TEXT("");
+}
+
+TSharedRef<SWidget> STreeSitterMarkdown::GenerateMarkdownSlateWidget() const
+{
+	check(Parser.IsValid());
+	
+	TSTree* Tree = Parser->Parse(GetMarkdownSourceText());
 	const TSNode RootNode = ts_tree_root_node(Tree);
 
-	TSharedRef<SWidget> Widget = UE::TreeSitter::GenerateMarkdownSlateWidget(RootNode, InSource);
+	TSharedRef<SWidget> Widget = UE::TreeSitter::GenerateMarkdownSlateWidget(RootNode, MarkdownSource.ToSharedRef());
     ts_tree_delete(Tree);
 
 	return Widget;

@@ -19,11 +19,15 @@ public:
 		{
 		}
 
+		SLATE_ARGUMENT(TSharedPtr<FString>, SourceCodeText)
+
 	SLATE_END_ARGS()
+
+	virtual ~STreeSitterTreeViewer() override;
 
 	void Construct(const FArguments& InArgs);
 
-	void UpdateTree(const TSNode& InRootNode, const FText& InCodeText);
+	void UpdateTree(const TSNode& InRootNode, const TSharedRef<FString>& InCodeText);
 
 	void ExpandTreeView(const TSharedRef<STreeSitterView>& InTreeView);
 	void SetItemExpansionRecursive(const TSharedPtr<FTreeSitterNode>& InTreeItem, bool bInExpansionState);
@@ -33,7 +37,7 @@ private:
 	TSharedPtr<STreeSitterView> TreeView;
 
 	// Copy of original source code to extract source info from
-	FText CodeText;
+	TSharedPtr<FString> CodeText;
 
 	static TSharedRef<ITableRow> GenerateRow(TSharedPtr<FTreeSitterNode> InItem, const TSharedRef<STableViewBase>& InOwnerTable);
 
@@ -42,7 +46,7 @@ private:
 	void PopulateTree(const TSNode& InNode, const TSharedPtr<FTreeSitterNode>& InParent, const uint32 InDepth);
 
 	/** Tries to find the corresponding field names for this node, if any */
-	static FString GetNodeFieldName(const TSNode& InNode);
+	static FName GetNodeFieldName(const TSNode& InNode);
 
 	static TArray<TSFieldId> GetFieldIdsForLanguage(const TSLanguage* InLanguage);
 };

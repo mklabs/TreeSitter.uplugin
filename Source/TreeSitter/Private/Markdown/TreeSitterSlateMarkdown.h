@@ -11,8 +11,8 @@ namespace UE::TreeSitter
 	FString ExtractNodeText(const TSNode& InNode, const FString& InSource);
 
 	/** Recursive function to process the tree and create Slate widgets for each node */
-	TSharedRef<SWidget> GenerateSlateWidgetsFromNode(const TSNode& InNode, const TSharedPtr<FTreeSitterNode>& InParent, const FString& InSource, const uint32 InDepth);
+	TSharedRef<SWidget> GenerateSlateWidgetsFromNode(const TSNode& InNode, const TSharedPtr<FTreeSitterNode>& InParent, const TSharedRef<FString>& InSource, const uint32 InDepth);
 
 	/** Wrap the root node in a container (like SVerticalBox) to display Markdown content */
-	TSharedRef<SWidget> GenerateMarkdownSlateWidget(const TSNode& InRootNode, const FString& InSource);
+	TSharedRef<SWidget> GenerateMarkdownSlateWidget(const TSNode& InRootNode, const TSharedRef<FString>& InSource);
 }

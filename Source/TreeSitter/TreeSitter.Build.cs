@@ -21,12 +21,12 @@ public class TreeSitter : ModuleRules
 				"CoreUObject",
 				"Engine",
 				"InputCore",
-				"Projects", 
+				"Projects",
 				"Slate",
-				"SlateCore", 
+				"SlateCore",
 			}
 		);
-		
+
 		// TODO Move to Editor module
 		if (Target.bBuildEditor)
 		{
@@ -36,6 +36,11 @@ public class TreeSitter : ModuleRules
 					"UnrealEd"
 				}
 			);
+		}
+
+		if (Target.bWithLiveCoding)
+		{
+			PrivateDependencyModuleNames.Add("LiveCoding");
 		}
 	}
 }

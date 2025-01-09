@@ -13,7 +13,6 @@ struct TSPoint;
 class FTreeSitterModule : public ITreeSitterModule
 {
 public:
-
 	//~ Begin IModuleInterface
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
@@ -21,6 +20,10 @@ public:
 	
 	//~ Begin ITreeSitterModule
 	virtual FGetLanguageParser* GetLanguageParser(const ETreeSitterLanguage InLanguage) override;
+	virtual void RegisterCustomMarkdownWidget(const FName& InNodeName, const FTreeSitterOnGetCustomWidgetInstance& InCustomWidgetDelegate) override;
+	virtual void UnregisterCustomMarkdownWidget(const FName& InNodeName) override;
+	virtual TSharedRef<SWidget> CreateWidgetForNodeType(const FName& InNodeType, const TSharedRef<FTreeSitterNode>& InNode, const FString& InOriginalSource) override;
+	virtual bool HasCustomWidgetForNodeType(const FName& InNodeType) override;
 	//~ End ITreeSitterModule
 
 private:
@@ -29,6 +32,15 @@ private:
 	
 	/** Reference to opened slate widget windows */
 	TArray<TSharedPtr<SWindow>> SlateWindows;
+	
+	FDelegateHandle OnLiveReloadPatchCompleteHandle;
+
+	TMap<FName, FTreeSitterOnGetCustomWidgetInstance> NodeNameToWidgetFactories;
+	
+	void OnLiveReloadComplete();
+
+	void RegisterCustomWidgetInstances();
+	void UnregisterCustomWidgetInstances();
 
 	/** Called from StartupModule and sets up console commands for the plugin via IConsoleManager */
 	void RegisterConsoleCommands();

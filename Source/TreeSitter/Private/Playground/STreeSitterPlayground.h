@@ -40,7 +40,8 @@ private:
 	// ETreeSitterLanguage SelectedLanguage = ETreeSitterLanguage::Json;
 	FName SelectedLanguage;
 	
-	FText CodeText;
+	// FText CodeText;
+	TSharedPtr<FString> CodeText;
 
 	void OnCodeChanged(const FText& NewText);
 	void ProcessPendingCode() const;

@@ -5,6 +5,7 @@
 #include "Modules/ModuleInterface.h"
 #include "Modules/ModuleManager.h"
 
+struct FTreeSitterNode;
 struct TSLanguage;
 
 UENUM()
@@ -15,6 +16,8 @@ enum class ETreeSitterLanguage : uint8
 	Markdown,
 	MarkdownInline,
 };
+
+DECLARE_DELEGATE_RetVal_TwoParams(TSharedRef<SWidget>, FTreeSitterOnGetCustomWidgetInstance, const TSharedRef<FTreeSitterNode>&, const FString&);
 
 /**
  * Interface for the Concert Sync Server module.
@@ -51,4 +54,12 @@ public:
 	 * Returns corresponding language parser, use this to get a reference onto `tree_sitter_json()` etc.
 	 */
 	virtual FGetLanguageParser* GetLanguageParser(const ETreeSitterLanguage InLanguage) = 0;
+
+	virtual void RegisterCustomMarkdownWidget(const FName& InNodeName, const FTreeSitterOnGetCustomWidgetInstance& InCustomWidgetDelegate) = 0;
+	virtual void UnregisterCustomMarkdownWidget(const FName& InNodeName) = 0;
+
+	/** Create widget for a given node type */
+    virtual TSharedRef<SWidget> CreateWidgetForNodeType(const FName& InNodeType, const TSharedRef<FTreeSitterNode>& InNode, const FString& InOriginalSource) = 0;
+
+	virtual bool HasCustomWidgetForNodeType(const FName& InNodeType) = 0;
 };

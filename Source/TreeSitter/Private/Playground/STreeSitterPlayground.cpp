@@ -45,6 +45,22 @@ class Foo {
 
 > Unreal Engine plugin that integrates the [tree-sitter](https://tree-sitter.github.io) library as a third-party module for in-editor use.
 
+## Table example
+
+
+Bottom line after HR
+
+---
+
+| Column1 | Column2 | Column3 | Column4 | Column5 |
+| --------------- | --------------- | --------------- | --------------- | --------------- |
+| Item1.1 | Item2.1 | Item3.1 | Item4.1 | Item5.1 |
+| Item1.2 | Item2.2 | Item3.2 | Item4.2 | Item5.2 |
+| Item1.3 | Item2.3 | Item3.3 | Item4.3 | Item5.3 |
+| Item1.4 | Item2.4 | Item3.4 | Item4.4 | Item5.4 |
+
+
+
 ## Todo
 
 - [ ] Task item 1
@@ -77,12 +93,15 @@ Baz is *Foobar* and ***foo***
 STreeSitterPlayground::~STreeSitterPlayground()
 {
 	Parser.Reset();
+	CodeText.Reset();
 }
 
 void STreeSitterPlayground::Construct(const FArguments& InArgs)
 {
 	Parser = MakeShared<FTreeSitterParser>();
 	Parser->SetLanguage(ETreeSitterLanguage::Json);
+
+	CodeText = MakeShared<FString>();
 
 	SelectedLanguage = UEnum::GetValueAsName(ETreeSitterLanguage::Json);
 	AvailableLanguages = {
@@ -163,7 +182,9 @@ void STreeSitterPlayground::Construct(const FArguments& InArgs)
 
 void STreeSitterPlayground::OnCodeChanged(const FText& NewText)
 {
-	CodeText = NewText;
+	check(CodeText.IsValid());
+	
+	*CodeText = NewText.ToString();
 	
 	if (GEditor)
 	{
@@ -176,23 +197,27 @@ void STreeSitterPlayground::OnCodeChanged(const FText& NewText)
 
 void STreeSitterPlayground::ProcessPendingCode() const
 {
-	TSTree* Tree = Parser->Parse(CodeText.ToString());
+	check(CodeText.IsValid());
+	
+	TSTree* Tree = Parser->Parse(*CodeText);
 	const TSNode RootNode = ts_tree_root_node(Tree);
 
-	TreeViewer->UpdateTree(RootNode, CodeText);
+	TreeViewer->UpdateTree(RootNode, CodeText.ToSharedRef());
 	ts_tree_delete(Tree);
 }
 
 void STreeSitterPlayground::HandleSelectedLanguageChanged(FName InSelectedLanguage, ESelectInfo::Type InSelectInfo)
 {
+	check(CodeText.IsValid());
+	
 	SelectedLanguage = InSelectedLanguage;
 
 	const ETreeSitterLanguage Language = static_cast<ETreeSitterLanguage>(StaticEnum<ETreeSitterLanguage>()->GetValueByName(InSelectedLanguage));
 	if (!bPreserveCode && Examples.Contains(Language))
 	{
 		const FString Example = Examples.FindChecked(Language);
-		CodeText = FText::FromString(Example);
-		CodeEditor->GetEditBox()->SetText(CodeText);
+		*CodeText = Example;
+		CodeEditor->GetEditBox()->SetText(FText::FromString(*CodeText));
 	}
 	
 	Parser->SetLanguage(Language);

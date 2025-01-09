@@ -4,12 +4,18 @@
 
 #include "HAL/PlatformProcess.h"
 #include "Interfaces/IPluginManager.h"
+#include "Markdown/Nodes/STreeSitterMarkdownHeading.h"
+#include "Markdown/Nodes/STreeSitterMarkdownParagraph.h"
 #include "Misc/MessageDialog.h"
 #include "Misc/Paths.h"
 #include "Modules/ModuleManager.h"
 #include "TreeSitter.h"
 #include "Markdown/STreeSitterMarkdownPlayground.h"
 #include "Playground/STreeSitterPlayground.h"
+
+#if WITH_LIVE_CODING
+#include "ILiveCodingModule.h"
+#endif
 
 #define LOCTEXT_NAMESPACE "TreeSitter"
 
@@ -44,10 +50,20 @@ void FTreeSitterModule::StartupModule()
 	// Simple sanity check to make sure the DLL loaded correctly
 	CheckTreeSitter();
 	CheckTreeSitterMarkdown();
+
+	RegisterCustomWidgetInstances();
+
+#if WITH_LIVE_CODING
+	if (ILiveCodingModule* LiveCoding = FModuleManager::LoadModulePtr<ILiveCodingModule>(LIVE_CODING_MODULE_NAME))
+	{
+		OnLiveReloadPatchCompleteHandle = LiveCoding->GetOnPatchCompleteDelegate().AddRaw(this, &FTreeSitterModule::OnLiveReloadComplete);
+	}
+#endif
 }
 
 void FTreeSitterModule::ShutdownModule()
 {
+	UnregisterCustomWidgetInstances();
 	UnregisterConsoleCommands();
 
 	for (void* DllHandle : ParserLibraryHandles)
@@ -57,6 +73,13 @@ void FTreeSitterModule::ShutdownModule()
 
 	ParserLibraryHandles.Reset();
 	SlateWindows.Reset();
+	
+#if WITH_LIVE_CODING
+	if (ILiveCodingModule* LiveCoding = FModuleManager::LoadModulePtr<ILiveCodingModule>(LIVE_CODING_MODULE_NAME))
+	{
+		LiveCoding->GetOnPatchCompleteDelegate().Remove(OnLiveReloadPatchCompleteHandle);
+	}
+#endif
 }
 
 ITreeSitterModule::FGetLanguageParser* FTreeSitterModule::GetLanguageParser(const ETreeSitterLanguage InLanguage)
@@ -74,6 +97,77 @@ ITreeSitterModule::FGetLanguageParser* FTreeSitterModule::GetLanguageParser(cons
 	}
 
 	return nullptr;
+}
+
+void FTreeSitterModule::RegisterCustomMarkdownWidget(const FName& InNodeName, const FTreeSitterOnGetCustomWidgetInstance& InCustomWidgetDelegate)
+{
+	if (InNodeName != NAME_None)
+	{
+		NodeNameToWidgetFactories.Add(InNodeName, InCustomWidgetDelegate);
+	}
+}
+
+void FTreeSitterModule::UnregisterCustomMarkdownWidget(const FName& InNodeName)
+{
+	if (InNodeName != NAME_None)
+	{
+		NodeNameToWidgetFactories.Remove(InNodeName);
+	}
+}
+
+TSharedRef<SWidget> FTreeSitterModule::CreateWidgetForNodeType(const ::FName& InNodeType, const TSharedRef<FTreeSitterNode>& InNode, const FString& InOriginalSource)
+{
+	if (const FTreeSitterOnGetCustomWidgetInstance* Factory = NodeNameToWidgetFactories.Find(InNodeType))
+	{
+		// Call the delegate to create the widget
+		return Factory->Execute(InNode, InOriginalSource);
+	}
+
+	// Fallback: Return default widget
+	return SNew(STextBlock)
+		.Text(FText::Format(LOCTEXT("UnknownNodeType", "Unknown Node Type: {0}"), FText::FromString(InNodeType.ToString())));
+}
+
+bool FTreeSitterModule::HasCustomWidgetForNodeType(const FName& InNodeType)
+{
+	return NodeNameToWidgetFactories.Contains(InNodeType);
+}
+
+void FTreeSitterModule::OnLiveReloadComplete()
+{
+	// Reload widget instances on live reload, we may have changed the registration names
+	UnregisterCustomWidgetInstances();
+	RegisterCustomWidgetInstances();
+}
+
+void FTreeSitterModule::RegisterCustomWidgetInstances()
+{
+	// Register the paragraph widget
+	RegisterCustomMarkdownWidget(
+		TEXT("paragraph"),
+		FTreeSitterOnGetCustomWidgetInstance::CreateStatic(&STreeSitterMarkdownParagraph::MakeInstance)
+	);
+
+	// // Register another widget
+	RegisterCustomMarkdownWidget(
+		TEXT("atx_heading"),
+		FTreeSitterOnGetCustomWidgetInstance::CreateStatic(&STreeSitterMarkdownHeading::MakeInstance)
+	);
+}
+
+void FTreeSitterModule::UnregisterCustomWidgetInstances()
+{
+	// for (auto [Name, Delegate]: NodeNameToWidgetFactories)
+	// {
+	// 	UnregisterCustomMarkdownWidget(Name);
+	// }
+	
+	// for (const TPair<FName, FTreeSitterOnGetCustomWidgetInstance>& Tuple : NodeNameToWidgetFactories)
+	// {
+	// 	UnregisterCustomMarkdownWidget(Tuple.Key);
+	// }
+
+	NodeNameToWidgetFactories.Reset();
 }
 
 void FTreeSitterModule::RegisterConsoleCommands()

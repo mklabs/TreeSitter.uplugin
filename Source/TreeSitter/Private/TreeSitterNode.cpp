@@ -4,9 +4,11 @@
 
 FTreeSitterNode::FTreeSitterNode(const TSNode& InNode, const uint32 InDepth)
 {
-	Language = FString(ts_language_name(ts_node_language(InNode)));
-	NodeType = FString(ts_node_type(InNode));
-	NodeGrammarType = FString(ts_node_grammar_type(InNode));
+	Node = InNode;
+	
+	Language = FName(ts_language_name(ts_node_language(InNode)));
+	NodeType = FName(ts_node_type(InNode));
+	NodeGrammarType = FName(ts_node_grammar_type(InNode));
 	Symbol =  ts_node_symbol(InNode);
 	GrammarSymbol = ts_node_grammar_symbol(InNode);
 	StartByte = ts_node_start_byte(InNode);

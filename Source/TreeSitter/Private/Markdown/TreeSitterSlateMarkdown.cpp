@@ -2,6 +2,7 @@
 
 #include "TreeSitterSlateMarkdown.h"
 
+#include "ITreeSitterModule.h"
 #include "TreeSitterNode.h"
 #include "tree_sitter/api.h"
 
@@ -14,15 +15,20 @@ FString UE::TreeSitter::ExtractNodeText(const TSNode& InNode, const FString& InS
 	return InSource.Mid(StartByte, EndByte - StartByte);
 }
 
-TSharedRef<SWidget> UE::TreeSitter::GenerateSlateWidgetsFromNode(const TSNode& InNode, const TSharedPtr<FTreeSitterNode>& InParent, const FString& InSource, const uint32 InDepth)
+TSharedRef<SWidget> UE::TreeSitter::GenerateSlateWidgetsFromNode(const TSNode& InNode, const TSharedPtr<FTreeSitterNode>& InParent, const TSharedRef<FString>& InSource, const uint32 InDepth)
 {
 	const char* NodeType = ts_node_type(InNode);
 	
-	const bool bIsNamed = ts_node_is_named(InNode);
-
 	const TSharedRef<FTreeSitterNode> NewNode = MakeShared<FTreeSitterNode>(InNode, InDepth);
-	
 	FSlateFontInfo SlateFontInfo = FSlateFontInfo(FPaths::EngineContentDir() / TEXT("Slate/Fonts/Roboto-Bold.ttf"), 10);
+
+	ITreeSitterModule& TreeSitterModule = ITreeSitterModule::Get();
+
+	if (TreeSitterModule.HasCustomWidgetForNodeType(NewNode->NodeType))
+	{
+		TSharedRef<SWidget> Widget = TreeSitterModule.CreateWidgetForNodeType(NodeType, NewNode, InSource.Get());
+		return Widget;
+	}
 
 	if (strcmp(NodeType, "atx_heading") == 0)
 	{
@@ -46,13 +52,16 @@ TSharedRef<SWidget> UE::TreeSitter::GenerateSlateWidgetsFromNode(const TSNode& I
 		// Extract inner heading_content text
 		constexpr const TCHAR* FieldNameKey = TEXT("heading_content");
 		const char* FieldName = TCHAR_TO_UTF8(FieldNameKey);
-		
+
 		const TSNode HeadingContentNode = ts_node_child_by_field_name(InNode, FieldName, strlen(FieldName));
-		const FString Content = ts_node_is_null(HeadingContentNode) ? TEXT("") : ExtractNodeText(HeadingContentNode, InSource);
+		const FString Content = ts_node_is_null(HeadingContentNode) ? TEXT("") : ExtractNodeText(HeadingContentNode, InSource.Get());
+
+		// Adjust font size based on level
+		const float FontSize = 24 - (HeadingLevel * 2);
 
 		return SNew(STextBlock)
 			.Text(FText::FromString(Content))
-			.Font(FSlateFontInfo(FPaths::EngineContentDir() / TEXT("Slate/Fonts/Roboto-Bold.ttf"), 24 - (HeadingLevel * 2))); // Adjust font size based on level
+			.Font(FSlateFontInfo(FPaths::EngineContentDir() / TEXT("Slate/Fonts/Roboto-Bold.ttf"), FontSize));
 	}
 
 	// block_quote
@@ -61,7 +70,7 @@ TSharedRef<SWidget> UE::TreeSitter::GenerateSlateWidgetsFromNode(const TSNode& I
 		// const TSNode BlockquoteMarker = ts_node_child(InNode, 0);
 		const TSNode Paragraph = ts_node_child(InNode, 1);
 		
-		const FString Text = ts_node_is_null(Paragraph) ? ExtractNodeText(InNode, InSource) : ExtractNodeText(Paragraph, InSource);
+		const FString Text = ts_node_is_null(Paragraph) ? ExtractNodeText(InNode, InSource.Get()) : ExtractNodeText(Paragraph, InSource.Get());
 
 		return SNew(SBorder)
 		.Padding(8.f)
@@ -75,10 +84,10 @@ TSharedRef<SWidget> UE::TreeSitter::GenerateSlateWidgetsFromNode(const TSNode& I
 
 	if (strcmp(NodeType, "paragraph") == 0)
 	{
-		const FString Text = ExtractNodeText(InNode, InSource);
+		const FString Text = ExtractNodeText(InNode, InSource.Get());
 
 		return SNew(STextBlock)
-			.Text(FText::FromString(Text))
+			.Text(FText::FromString(TEXT("Old one")))
 			.AutoWrapText(true);
 	}
 
@@ -102,7 +111,7 @@ TSharedRef<SWidget> UE::TreeSitter::GenerateSlateWidgetsFromNode(const TSNode& I
 
 	if (strcmp(NodeType, "list_item") == 0)
 	{
-		const FString Text = ExtractNodeText(InNode, InSource);
+		const FString Text = ExtractNodeText(InNode, InSource.Get());
 
 		return SNew(SHorizontalBox)
 			+ SHorizontalBox::Slot()
@@ -133,7 +142,7 @@ TSharedRef<SWidget> UE::TreeSitter::GenerateSlateWidgetsFromNode(const TSNode& I
 	return Container;
 }
 
-TSharedRef<SWidget> UE::TreeSitter::GenerateMarkdownSlateWidget(const TSNode& InRootNode, const FString& InSource)
+TSharedRef<SWidget> UE::TreeSitter::GenerateMarkdownSlateWidget(const TSNode& InRootNode, const TSharedRef<FString>& InSource)
 {
 	return GenerateSlateWidgetsFromNode(InRootNode, nullptr, InSource, 0);
 }
