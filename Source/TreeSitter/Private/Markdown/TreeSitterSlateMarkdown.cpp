@@ -30,15 +30,6 @@ TSharedRef<SWidget> UE::TreeSitter::GenerateSlateWidgetsFromNode(const TSNode& I
 		return Widget;
 	}
 
-	if (strcmp(NodeType, "paragraph") == 0)
-	{
-		const FString Text = ExtractNodeText(InNode, InSource.Get());
-
-		return SNew(STextBlock)
-			.Text(FText::FromString(TEXT("Old one")))
-			.AutoWrapText(true);
-	}
-
 	if (strcmp(NodeType, "list") == 0)
 	{
 		TSharedRef<SVerticalBox> ListBox = SNew(SVerticalBox);

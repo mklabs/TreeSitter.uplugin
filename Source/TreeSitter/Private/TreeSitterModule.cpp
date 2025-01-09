@@ -7,6 +7,7 @@
 #include "Markdown/Nodes/STreeSitterMarkdownBlockquote.h"
 #include "Markdown/Nodes/STreeSitterMarkdownHeading.h"
 #include "Markdown/Nodes/STreeSitterMarkdownParagraph.h"
+#include "Markdown/Nodes/STreeSitterMarkdownTable.h"
 #include "Markdown/STreeSitterMarkdownPlayground.h"
 #include "Misc/MessageDialog.h"
 #include "Misc/Paths.h"
@@ -149,16 +150,22 @@ void FTreeSitterModule::RegisterCustomWidgetInstances()
 		FTreeSitterOnGetCustomWidgetInstance::CreateStatic(&STreeSitterMarkdownParagraph::MakeInstance)
 	);
 
-	// // Register headings widget
+	// Register headings widget
 	RegisterCustomMarkdownWidget(
 		TEXT("atx_heading"),
 		FTreeSitterOnGetCustomWidgetInstance::CreateStatic(&STreeSitterMarkdownHeading::MakeInstance)
 	);
 	
-	// // Register blockquote widget
+	// Register blockquote widget
 	RegisterCustomMarkdownWidget(
 		TEXT("block_quote"),
 		FTreeSitterOnGetCustomWidgetInstance::CreateStatic(&STreeSitterMarkdownBlockquote::MakeInstance)
+	);
+
+	// Register table widget
+	RegisterCustomMarkdownWidget(
+		TEXT("pipe_table"),
+		FTreeSitterOnGetCustomWidgetInstance::CreateStatic(&STreeSitterMarkdownTable::MakeInstance)
 	);
 }
 
