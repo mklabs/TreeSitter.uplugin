@@ -4,14 +4,15 @@
 
 #include "HAL/PlatformProcess.h"
 #include "Interfaces/IPluginManager.h"
+#include "Markdown/Nodes/STreeSitterMarkdownBlockquote.h"
 #include "Markdown/Nodes/STreeSitterMarkdownHeading.h"
 #include "Markdown/Nodes/STreeSitterMarkdownParagraph.h"
+#include "Markdown/STreeSitterMarkdownPlayground.h"
 #include "Misc/MessageDialog.h"
 #include "Misc/Paths.h"
 #include "Modules/ModuleManager.h"
-#include "TreeSitter.h"
-#include "Markdown/STreeSitterMarkdownPlayground.h"
 #include "Playground/STreeSitterPlayground.h"
+#include "TreeSitter.h"
 
 #if WITH_LIVE_CODING
 #include "ILiveCodingModule.h"
@@ -148,10 +149,16 @@ void FTreeSitterModule::RegisterCustomWidgetInstances()
 		FTreeSitterOnGetCustomWidgetInstance::CreateStatic(&STreeSitterMarkdownParagraph::MakeInstance)
 	);
 
-	// // Register another widget
+	// // Register headings widget
 	RegisterCustomMarkdownWidget(
 		TEXT("atx_heading"),
 		FTreeSitterOnGetCustomWidgetInstance::CreateStatic(&STreeSitterMarkdownHeading::MakeInstance)
+	);
+	
+	// // Register blockquote widget
+	RegisterCustomMarkdownWidget(
+		TEXT("block_quote"),
+		FTreeSitterOnGetCustomWidgetInstance::CreateStatic(&STreeSitterMarkdownBlockquote::MakeInstance)
 	);
 }
 

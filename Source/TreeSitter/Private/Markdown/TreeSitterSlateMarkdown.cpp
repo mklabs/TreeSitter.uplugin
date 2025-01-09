@@ -30,58 +30,6 @@ TSharedRef<SWidget> UE::TreeSitter::GenerateSlateWidgetsFromNode(const TSNode& I
 		return Widget;
 	}
 
-	if (strcmp(NodeType, "atx_heading") == 0)
-	{
-		// Extract heading level
-
-		// Get first child, which is expected to be an atx_h[1-6]_marker
-		const TSNode HeadingMarkerNode = ts_node_child(InNode, 0);
-		int32 HeadingLevel = 1;
-
-		if (!ts_node_is_null(HeadingMarkerNode))
-		{
-			// Try to extract the heading level info out of the marker type:
-			// atx_h1_marker => H1
-			// atx_h2_marker => H2
-			// etc.
-			const FString HeadingNodeType = FString(ts_node_type(HeadingMarkerNode));
-			const FString HeadingLevelString = HeadingNodeType.Mid(5, 1);
-			HeadingLevel = FCString::Atoi(*HeadingLevelString);
-		}
-
-		// Extract inner heading_content text
-		constexpr const TCHAR* FieldNameKey = TEXT("heading_content");
-		const char* FieldName = TCHAR_TO_UTF8(FieldNameKey);
-
-		const TSNode HeadingContentNode = ts_node_child_by_field_name(InNode, FieldName, strlen(FieldName));
-		const FString Content = ts_node_is_null(HeadingContentNode) ? TEXT("") : ExtractNodeText(HeadingContentNode, InSource.Get());
-
-		// Adjust font size based on level
-		const float FontSize = 24 - (HeadingLevel * 2);
-
-		return SNew(STextBlock)
-			.Text(FText::FromString(Content))
-			.Font(FSlateFontInfo(FPaths::EngineContentDir() / TEXT("Slate/Fonts/Roboto-Bold.ttf"), FontSize));
-	}
-
-	// block_quote
-	if (strcmp(NodeType, "block_quote") == 0)
-	{
-		// const TSNode BlockquoteMarker = ts_node_child(InNode, 0);
-		const TSNode Paragraph = ts_node_child(InNode, 1);
-		
-		const FString Text = ts_node_is_null(Paragraph) ? ExtractNodeText(InNode, InSource.Get()) : ExtractNodeText(Paragraph, InSource.Get());
-
-		return SNew(SBorder)
-		.Padding(8.f)
-		.BorderImage(FAppStyle::GetBrush("Border"))
-		[
-			SNew(STextBlock)
-			.Text(FText::FromString(Text))
-			.AutoWrapText(true)
-		];
-	}
-
 	if (strcmp(NodeType, "paragraph") == 0)
 	{
 		const FString Text = ExtractNodeText(InNode, InSource.Get());
