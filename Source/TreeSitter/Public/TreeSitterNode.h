@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Templates/SharedPointer.h"
 #include "tree_sitter/api.h"
 
 struct FTreeSitterNode

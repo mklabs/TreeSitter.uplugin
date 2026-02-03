@@ -9,7 +9,8 @@ public class TreeSitter : ModuleRules
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"TreeSitterLibrary"
+				"Core",
+				"TreeSitterLibrary", 
 			}
 		);
 
@@ -17,7 +18,6 @@ public class TreeSitter : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"Core",
 				"CoreUObject",
 				"Engine",
 				"InputCore",

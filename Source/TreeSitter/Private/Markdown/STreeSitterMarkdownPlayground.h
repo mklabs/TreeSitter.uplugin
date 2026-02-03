@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Engine/TimerHandle.h"
 #include "Widgets/SCompoundWidget.h"
 
 class FTreeSitterParser;

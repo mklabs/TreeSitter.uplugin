@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Engine/TimerHandle.h"
+#include "Widgets/Input/SComboBox.h"
 #include "Widgets/SCompoundWidget.h"
 
 class FTreeSitterParser;

@@ -2,9 +2,11 @@
 
 #pragma once
 
-struct FTreeSitterNode;
+#include "Widgets/Views/STableRow.h"
+
 class FTreeSitterParser;
 class SBorder;
+struct FTreeSitterNode;
 
 struct FTreeSitterMarkdownTableListItem
 {

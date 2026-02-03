@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "Widgets/SCompoundWidget.h"
+
 struct FTreeSitterNode;
 class FTreeSitterParser;
 class SBorder;

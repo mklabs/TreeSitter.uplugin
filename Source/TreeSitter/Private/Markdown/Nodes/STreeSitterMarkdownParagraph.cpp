@@ -3,6 +3,7 @@
 #include "STreeSitterMarkdownParagraph.h"
 
 #include "TreeSitterNode.h"
+#include "Widgets/Text/STextBlock.h"
 
 STreeSitterMarkdownParagraph::~STreeSitterMarkdownParagraph()
 {

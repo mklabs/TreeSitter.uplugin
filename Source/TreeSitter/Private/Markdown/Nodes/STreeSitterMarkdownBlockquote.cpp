@@ -2,8 +2,11 @@
 
 #include "STreeSitterMarkdownBlockquote.h"
 
+#include "Components/HorizontalBox.h"
 #include "Markdown/TreeSitterSlateMarkdown.h"
 #include "TreeSitterNode.h"
+#include "Widgets/Layout/SBorder.h"
+#include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "TreeSitter"
 

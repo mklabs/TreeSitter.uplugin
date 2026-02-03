@@ -2,8 +2,10 @@
 
 #include "TreeSitterSlateMarkdown.h"
 
+#include "Components/VerticalBox.h"
 #include "ITreeSitterModule.h"
 #include "TreeSitterNode.h"
+#include "Widgets/Text/STextBlock.h"
 #include "tree_sitter/api.h"
 
 FString UE::TreeSitter::ExtractNodeText(const TSNode& InNode, const FString& InSource)
@@ -20,7 +22,6 @@ TSharedRef<SWidget> UE::TreeSitter::GenerateSlateWidgetsFromNode(const TSNode& I
 	const char* NodeType = ts_node_type(InNode);
 	
 	const TSharedRef<FTreeSitterNode> NewNode = MakeShared<FTreeSitterNode>(InNode, InDepth);
-	FSlateFontInfo SlateFontInfo = FSlateFontInfo(FPaths::EngineContentDir() / TEXT("Slate/Fonts/Roboto-Bold.ttf"), 10);
 
 	ITreeSitterModule& TreeSitterModule = ITreeSitterModule::Get();
 

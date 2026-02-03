@@ -1,6 +1,7 @@
 ﻿// Copyright 2025 Mickael Daniel. All Rights Reserved.
 
 #pragma once
+#include "Widgets/SCompoundWidget.h"
 
 class FTreeSitterParser;
 class SBorder;

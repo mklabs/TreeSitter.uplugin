@@ -2,9 +2,11 @@
 
 #pragma once
 
-struct FTreeSitterNode;
+#include "Widgets/SCompoundWidget.h"
+
 class FTreeSitterParser;
 class SBorder;
+struct FTreeSitterNode;
 
 class STreeSitterMarkdownParagraph : public SCompoundWidget
 {

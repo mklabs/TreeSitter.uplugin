@@ -3,12 +3,16 @@
 #pragma once
 
 #include "ITreeSitterModule.h"
+#include "Internationalization/Text.h"
+#include "Math/Vector2D.h"
 
+class SWindow;
+struct IConsoleCommand;
 struct TSLanguage;
 struct TSNode;
 struct TSParser;
-struct TSRange;
 struct TSPoint;
+struct TSRange;
 
 class FTreeSitterModule : public ITreeSitterModule
 {

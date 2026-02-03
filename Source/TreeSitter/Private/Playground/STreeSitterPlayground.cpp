@@ -7,6 +7,7 @@
 #include "STreeSitterCodeEditor.h"
 #include "STreeSitterTreeViewer.h"
 #include "TreeSitterParser.h"
+#include "Widgets/Input/SCheckBox.h"
 #include "Widgets/Input/SMultiLineEditableTextBox.h"
 #include "tree_sitter/api.h"
 

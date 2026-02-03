@@ -2,6 +2,7 @@
 
 #include "TreeSitterModule.h"
 
+#include "Framework/Docking/TabManager.h"
 #include "HAL/PlatformProcess.h"
 #include "Interfaces/IPluginManager.h"
 #include "Markdown/Nodes/STreeSitterMarkdownBlockquote.h"
@@ -14,6 +15,7 @@
 #include "Modules/ModuleManager.h"
 #include "Playground/STreeSitterPlayground.h"
 #include "TreeSitter.h"
+#include "Widgets/SWindow.h"
 
 #if WITH_LIVE_CODING
 #include "ILiveCodingModule.h"

@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include "Templates/SharedPointer.h"
+
+class SWidget;
 struct FTreeSitterNode;
 struct TSNode;
 

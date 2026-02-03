@@ -4,7 +4,9 @@
 
 #include "Modules/ModuleInterface.h"
 #include "Modules/ModuleManager.h"
+#include "UObject/ObjectMacros.h"
 
+class SWidget;
 struct FTreeSitterNode;
 struct TSLanguage;
 

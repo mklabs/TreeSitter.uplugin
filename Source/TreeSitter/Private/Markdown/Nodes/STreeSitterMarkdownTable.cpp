@@ -4,6 +4,8 @@
 
 #include "Markdown/TreeSitterSlateMarkdown.h"
 #include "TreeSitterNode.h"
+#include "Widgets/Text/STextBlock.h"
+#include "Widgets/Views/SListView.h"
 
 #define LOCTEXT_NAMESPACE "TreeSitter"
 

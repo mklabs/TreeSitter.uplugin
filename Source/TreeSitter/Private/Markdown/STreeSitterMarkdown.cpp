@@ -5,6 +5,7 @@
 #include "ITreeSitterModule.h"
 #include "TreeSitterParser.h"
 #include "TreeSitterSlateMarkdown.h"
+#include "Widgets/Layout/SBorder.h"
 #include "tree_sitter/api.h"
 
 STreeSitterMarkdown::~STreeSitterMarkdown()

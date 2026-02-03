@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "Templates/SharedPointer.h"
+
 enum class ETreeSitterLanguage : uint8;
 struct TSLanguage;
 struct TSParser;

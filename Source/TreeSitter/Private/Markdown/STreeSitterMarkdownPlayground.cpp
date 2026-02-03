@@ -2,6 +2,8 @@
 
 #include "STreeSitterMarkdownPlayground.h"
 
+#include "Components/VerticalBox.h"
+#include "Editor.h"
 #include "Playground/STreeSitterCodeEditor.h"
 #include "Markdown/STreeSitterMarkdown.h"
 
